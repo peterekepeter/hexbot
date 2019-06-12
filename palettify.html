@@ -48,6 +48,8 @@
     const projectTitle = 'palettify';
 
     let title = null;
+    let history = [];
+    let historyPosition = 0;
     let palette = [];
     let somethingWentWrong = false;
     let isLoading = false;
@@ -61,11 +63,13 @@
     }
 
     const actions = {
-        randomize: async () => setPalette(await getRandomColors(palette.length)),
+        undo: () => undoPalette(),
+        redo: () => redoPalette(),
+        add: async () => setPalette(Array.concat(palette, await getRandomColors(1))),
+        remove: () => setPalette(palette.slice(0, palette.length-1)),
         sort: async () => setPalette(sortColorsByLuminance(palette)),
         arrange: () => setPalette(arrangeColorsByMinimizingDistance(palette)),
-        add: async () => setPalette(Array.concat(palette, await getRandomColors(1))),
-        remove: () => setPalette(palette.slice(0, palette.length-1))
+        randomize: async () => setPalette(await getRandomColors(palette.length)),
     }
     
     function initActionList(){
@@ -79,7 +83,26 @@
     }
 
     function setPalette(value){
+        if (historyPosition != history.length-1){
+            history = history.slice(0, historyPosition+1);
+        }
+        history.push(value);
         palette = value;
+        historyPosition = history.length-1;
+        onPaletteChanged();
+    }
+    
+    function undoPalette(){
+        if (historyPosition <= 0) return;
+        historyPosition--;
+        palette = history[historyPosition];
+        onPaletteChanged();
+    }
+
+    function redoPalette(){
+        if (historyPosition >= history.length-1) return;
+        historyPosition++;
+        palette = history[historyPosition];
         onPaletteChanged();
     }
 
