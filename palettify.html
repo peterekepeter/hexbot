@@ -16,11 +16,16 @@
 <style>
     html { text-transform: uppercase; font-family: sans-serif; font-weight: bold }
     html { line-height: 1.5; letter-spacing: .2em; }
+    @media (min-width:1500px) { html { font-size:21px }}
+    @media (max-width:900px) { html { font-size:16px }}
+    @media (max-width:600px) { html { font-size:14px }}
+    @media (max-width:400px) { html { font-size:12px }}
     .paletteColor { display: inline-block; width:8rem; height:8rem; flex-grow:1 }
     .paletteColor { transition: background 200ms ease-in-out; }
-    #paletteView { display: flex; width:100%; }
-    html { background: var(--color-bg); color:var(--color-fg)}
-    a { color:var(--color-accent); text-decoration: none; cursor:pointer; user-select: none; }
+    #paletteView { display: flex; width:100%; height: 8rem; }
+    #mainTitle { white-space: nowrap; }
+    html { background: var(--bg); color:var(--fg)}
+    a { color:var(--pr); text-decoration: none; cursor:pointer; user-select: none; }
     a:hover { text-decoration: underline; }
     h1,p,body{ margin:0; padding:0 }
     .mar2 { margin:2rem; }
@@ -29,9 +34,9 @@
     .pad1 { padding:1rem; }
     .action { display: inline-block; }
     :root{
-        --color-bg: #111;
-        --color-fg: #ccc;
-        --color-accent: #c44;
+        --bg: #111;
+        --fg: #ccc;
+        --pr: #c44;
     }
 </style>
 <script>
@@ -58,7 +63,9 @@
     const actions = {
         randomize: async () => setPalette(await getRandomColors(palette.length)),
         sort: async () => setPalette(sortColorsByLuminance(palette)),
-        arrange: () => setPalette(arrangeColorsByMinimizingDistance(palette))
+        arrange: () => setPalette(arrangeColorsByMinimizingDistance(palette)),
+        add: async () => setPalette(Array.concat(palette, await getRandomColors(1))),
+        remove: () => setPalette(palette.slice(0, palette.length-1))
     }
     
     function initActionList(){
