@@ -1,0 +1,116 @@
+<!-- a single page, single page app -->
+<html>
+    <head>
+        <title id="windowTitle">palettify</title>
+    </head>
+    <body>
+        <h1 id='mainTitle'>palettify</h1>
+        <p>
+            create beautiful palettes powered by 
+            <a href="https://noopschallenge.com/challenges/hexbot">hexbot</a>
+        </p>
+    </body>
+</html>
+<style>
+    html { text-transform: uppercase; font-family: sans-serif; line-height: 1.5; letter-spacing: .2em; font-weight: bold }
+</style>
+<script>
+
+    'use strict';
+    console.log("Let's see how far we can push this!!!!!");
+    setTimeout(main);
+    
+    const projectTitle = 'palettify';
+
+    let title = null;
+    let palette = [];
+    let somethingWentWrong = false;
+    let isLoading = false;
+    let loadingAnimationTimeout = null;
+    let loadingAnimationFrame = 0;
+
+    async function main(){
+        const colors = await getRandomColors();
+        // setPalette(colors);
+    }
+
+    function setPalette(){
+        // stub
+    }
+
+    function onPaletteChanged(){
+        // stub
+    }
+
+    async function getRandomColors(count){
+        setIsLoading(true);
+        try{
+            let url = 'https://api.noopschallenge.com/hexbot';
+            if (count != null){
+                url += '?count=' + encodeURIComponent(count);
+            }
+            const response = await fetch(url);
+            const json = await response.json();
+            const colors = decodeHexbotResponse(json);
+            setIsLoading(false);
+            return colors;
+        }
+        catch (error){
+            setIsLoading(false);
+            console.error(error);
+            setSomethingWentWrong(true);
+            return [];
+        }
+    }
+
+
+    function setIsLoading(state){
+        if (isLoading != state){
+            isLoading = state;
+            isLoadingChanged();
+        }
+    }
+
+    function setSomethingWentWrong(state){
+        if (somethingWentWrong == state) return;
+        somethingWentWrong = state;
+        renderTitle();
+    }
+
+    function isLoadingChanged(){
+        renderTitle();
+    }
+
+    function renderTitle(){
+        let content = projectTitle;
+        if (isLoading){
+            content += ' is working';
+            for (let i=0;i< loadingAnimationFrame; i++){
+                content += '.';
+            }
+            loadingAnimationTimeout = setTimeout(() => {
+                loadingAnimationFrame++;
+                isLoadingChanged();
+            }, 10);
+        } 
+        else 
+        {
+            loadingAnimationFrame = 0;
+        }
+        if (somethingWentWrong){
+            content += ' failed, check console';
+        }
+        setTitle(content);
+    }
+
+    function setTitle(stringValue){
+        if (title === stringValue) return;
+        title = stringValue;
+        mainTitle.textContent = title;
+        windowTitle.textContent = title;
+    }
+
+    function decodeHexbotResponse(){
+        // stub
+    }
+</script>
