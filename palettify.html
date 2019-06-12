@@ -4,20 +4,35 @@
         <title id="windowTitle">palettify</title>
     </head>
     <body>
-        <h1 id='mainTitle'>palettify</h1>
-        <p>
+        <h1 class="mar2" id='mainTitle'>palettify</h1>
+        <p class="mar2">
             create beautiful palettes powered by 
             <a href="https://noopschallenge.com/challenges/hexbot">hexbot</a>
         </p>
-        <div id='paletteView'>
-
-        </div>
+        <div id='paletteView'></div>
+        <p id='actionListView' class="mar1"></p>
     </body>
 </html>
 <style>
     html { text-transform: uppercase; font-family: sans-serif; font-weight: bold }
     html { line-height: 1.5; letter-spacing: .2em; }
-    .paletteColor { display: inline-block; width:4rem; height:4rem; }
+    .paletteColor { display: inline-block; width:8rem; height:8rem; flex-grow:1 }
+    .paletteColor { transition: background 200ms ease-in-out; }
+    #paletteView { display: flex; width:100%; }
+    html { background: var(--color-bg); color:var(--color-fg)}
+    a { color:var(--color-accent); text-decoration: none; cursor:pointer; user-select: none; }
+    a:hover { text-decoration: underline; }
+    h1,p,body{ margin:0; padding:0 }
+    .mar2 { margin:2rem; }
+    .mar1 { margin:1rem; }
+    .pad2 { padding:2rem; }
+    .pad1 { padding:1rem; }
+    .action { display: inline-block; }
+    :root{
+        --color-bg: #111;
+        --color-fg: #ccc;
+        --color-accent: #c44;
+    }
 </style>
 <script>
 
@@ -35,8 +50,25 @@
     let loadingAnimationFrame = 0;
 
     async function main(){
-        const colors = await getRandomColors(16);
+        initActionList();
+        const colors = await getRandomColors(8);
         setPalette(sortColors(colors));
+    }
+
+    const actions = {
+        randomize: async () => setPalette(await getRandomColors(palette.length)),
+        sort: async () => setPalette(sortColorsByLuminance(palette)),
+        arrange: () => setPalette(arrangeColorsByMinimizingDistance(palette))
+    }
+    
+    function initActionList(){
+        for (let action in actions){
+            actionListView.appendChild(render('a', {
+                className: 'action pad1',
+                onclick: actions[action],
+                textContent: action
+            }))
+        }
     }
 
     function setPalette(value){
@@ -116,7 +148,7 @@
 
     function sortColors(unsorted){
         let colors = sortColorsByLuminance(unsorted);
-        for (let i=0; i<100; i++){
+        for (let i=0; i<24; i++){
             colors = arrangeColorsByMinimizingDistance(colors);
         }
         return colors;
@@ -124,7 +156,7 @@
 
     function sortColorsByLuminance(unsorted){
         const colors = unsorted.slice();
-        colors.sort((a,b) => Math.sign(a[0]*2+a[1]*3+a[2]-b[0]*2-b[1]*3-b[2]));
+        colors.sort((a,b) => Math.sign(a[0]*3+a[1]*5+a[2]-b[0]*3-b[1]*5-b[2]));
         return colors;
     }
 
@@ -133,23 +165,22 @@
         function distanceAt(color, index) {
             let distance = 0;
             if (index < colors.length-1) { 
-                distance += manhattanDistance(colors[index], colors[index+1]);
+                distance += manhattanDistance(color, colors[index+1]);
             }
             if (index > 0) { 
-                distance += manhattanDistance(colors[index], colors[index-1]); 
+                distance += manhattanDistance(color, colors[index-1]); 
             }
             return distance;
         }
 
-        for (let i=1; i<colors.length-1; i++){
-            for (let j=1; j<colors.length-1; j++){
+        for (let i=0; i<colors.length; i++){
+            for (let j=0; j<colors.length; j++){
                 const ith = colors[i];
                 const jth = colors[j];
                 const initialDistance = 
                     distanceAt(ith, i) + distanceAt(jth, j);
                 const distanceAfterSwap = 
                     distanceAt(jth, i) + distanceAt(ith, j);
-
                 if (initialDistance > distanceAfterSwap){
                     colors[j] = ith;
                     colors[i] = jth;
@@ -180,12 +211,21 @@
     }
 
     function renderPaletteView(){
-        paletteView.innerHTML = '';
-        for (let [r,g,b] of palette){
-            paletteView.appendChild(render('div', {
-                className: 'paletteColor',
-                style: `background: rgb(${r},${g},${b})`
-            }));
+        while (paletteView.children.length < palette.length){
+            paletteView.appendChild(render('div'), { 
+                className:'paletteColor',
+                style:'background:black'
+            });
+        }
+        while (paletteView.children.length > palette.length){
+            paletteView.removeChild(paletteView.children[paletteView.children.length-1]);
+        }
+        for (let i=0; i<palette.length; i++){
+            const [r,g,b] = palette[i];
+            const color = `rgb(${r},${g},${b})`;
+            const element = paletteView.children[i];
+            element.className='paletteColor';
+            element.style.background = color;
         }
     }
 
