@@ -12,6 +12,10 @@
         </p>
         <div id='paletteView'></div>
         <p id='actionListView' class="mar1"></p>
+        <div id="colorEditor" style="display:none">
+            <div id="colorView"></div>
+            <p id='colorActionListView' class="mar1"></p>
+        </div>
     </body>
 </html>
 <style>
@@ -23,7 +27,10 @@
     @media (max-width:400px) { html { font-size:12px }}
     .paletteColor { display: inline-block; width:8rem; height:8rem; flex-grow:1 }
     .paletteColor { transition: background 200ms ease-in-out; }
+    .paletteColor:hover { outline: solid .5rem var(--pr); z-index: 1; cursor:pointer }
     #paletteView { display: flex; width:100%; height: 8rem; }
+    #colorView { height:8rem;}
+    #colorView { transition: background 100ms ease-in-out;}
     #mainTitle { white-space: nowrap; }
     html { background: var(--bg); color:var(--fg)}
     a { color:var(--pr); text-decoration: none; cursor:pointer; user-select: none; }
@@ -56,6 +63,7 @@
     let isLoading = false;
     let loadingAnimationTimeout = null;
     let loadingAnimationFrame = 0;
+    let selectedIndex = null;
 
     async function main(){
         initActionList();
@@ -63,7 +71,7 @@
         setPalette(sortColors(colors));
     }
 
-    const actions = {
+    const paletteActions = {
         undo: () => undoPalette(),
         redo: () => redoPalette(),
         add: async () => setPalette(Array.concat(palette, await getRandomColors(1))),
@@ -72,15 +80,37 @@
         arrange: () => setPalette(arrangeColorsByMinimizingDistance(palette)),
         randomize: async () => setPalette(await getRandomColors(palette.length)),
     }
+
+    const colorActions = {
+        random: async () => setCurrentColor(await getRandomColor())
+    }
     
     function initActionList(){
-        for (let action in actions){
+        for (let action in paletteActions){
             actionListView.appendChild(render('a', {
                 className: 'action pad1',
-                onclick: actions[action],
+                onclick: paletteActions[action],
                 textContent: action
             }))
         }
+        for (let action in colorActions){
+            colorActionListView.appendChild(render('a', {
+                className: 'action pad1',
+                onclick: colorActions[action],
+                textContent: action
+            }))
+        }
+    }
+
+    function setCurrentColor(rgb){
+        if (selectedIndex === null) {
+            console.error('no color selected');
+            return;
+        }
+        console.log(rgb);
+        const newPalette = palette.slice();
+        newPalette[selectedIndex] = rgb;
+        setPalette(newPalette);
     }
 
     function setPalette(value){
@@ -109,6 +139,12 @@
 
     function onPaletteChanged(){
         renderPaletteView();
+        renderColorEditor();
+    }
+
+    async function getRandomColor(){
+        const colors = await getRandomColors(1);
+        return colors[0];
     }
 
     async function getRandomColors(count){
@@ -177,6 +213,17 @@
         setTitle(content);
     }
 
+    function setSelectedIndex(newIndex){
+        if (newIndex < 0 || newIndex > palette.length) { newIndex = null; }
+        if (selectedIndex === newIndex) return;
+        selectedIndex = newIndex;
+        onSelectedInstanceChange();
+    }
+
+    function onSelectedInstanceChange(){
+        renderColorEditor();
+    }
+
     function sortColors(unsorted){
         let colors = sortColorsByLuminance(unsorted);
         for (let i=0; i<24; i++){
@@ -243,21 +290,28 @@
 
     function renderPaletteView(){
         while (paletteView.children.length < palette.length){
-            paletteView.appendChild(render('div'), { 
-                className:'paletteColor',
-                style:'background:black'
-            });
+            paletteView.appendChild(render('div'));
         }
         while (paletteView.children.length > palette.length){
             paletteView.removeChild(paletteView.children[paletteView.children.length-1]);
         }
         for (let i=0; i<palette.length; i++){
-            const [r,g,b] = palette[i];
-            const color = `rgb(${r},${g},${b})`;
             const element = paletteView.children[i];
             element.className='paletteColor';
-            element.style.background = color;
+            element.style.background = rgbToCssColor(palette[i]);
+            element.onclick = () => setSelectedIndex(i);
         }
+    }
+
+    function renderColorEditor(){
+        if (selectedIndex === null){
+            colorEditor.style.display = 'none';
+            return;
+        } else {
+            colorEditor.style.display = null;
+        }
+        const rgb = palette[selectedIndex];
+        colorView.style.background = rgbToCssColor(rgb);;
     }
 
     const render = (tag, props) => {
@@ -274,5 +328,7 @@
     const hexToRgb = (hex) => hex.match(/[0-9A-F]{2}/g).map(hexToInt);
 
     const hexToInt = (hex) => Number.parseInt(hex, 16);
+
+    const rgbToCssColor = ([r,g,b]) => `rgb(${r},${g},${b})`;
 
 </script>
