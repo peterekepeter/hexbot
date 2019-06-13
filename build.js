@@ -2,8 +2,8 @@ const fs = require('fs').promises;
 
 async function main(){
     const distDir = './dist';
-    makeSureDirExists(distDir);
-    cp('./palettify.html', distDir + "/index.html");
+    await makeSureDirExists(distDir);
+    await cp('./palettify.html', distDir + "/index.html");
 }
 
 async function cp(src, dest){
@@ -28,7 +28,7 @@ async function makeSureDirExists(dir){
 (async() => {
     try {
         process.chdir(__dirname);
-        console.log('working directory', __dirname);
+        console.log('Working directory', __dirname);
         await main();
     }
     catch (error){
