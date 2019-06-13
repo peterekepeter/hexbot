@@ -12,7 +12,7 @@
         </p>
         <div id='paletteView'></div>
         <p id='actionListView' class="mar1"></p>
-        <div id="colorEditor" style="display:none">
+        <div id="colorEditor">
             <div id="colorView"></div>
             <p id='colorActionListView' class="mar1"></p>
         </div>
@@ -41,12 +41,8 @@
     .pad2 { padding:2rem; }
     .pad1 { padding:1rem; }
     .action { display: inline-block; }
-    :root{
-        --bg: #111;
-        --fg: #ccc;
-        --pr: #c44;
-    }
 </style>
+<style id="dynamicStyle"></style>
 <script>
 
     'use strict';
@@ -54,6 +50,10 @@
     setTimeout(main);
 
     const projectTitle = 'palettify';
+    const themeBackgroundIndex = 0;
+    const themeForegroundIndex = 1;
+    const themeAccentIndex = 2;
+    const defaultTheme = [[16,16,16], [240,240,240], [240,64,64]];
 
     let title = null;
     let history = [];
@@ -63,10 +63,13 @@
     let isLoading = false;
     let loadingAnimationTimeout = null;
     let loadingAnimationFrame = 0;
-    let selectedIndex = null;
+    let selectedIndex;
+    let theme;
 
     async function main(){
         initActionList();
+        setSelectedIndex(null);
+        setTheme(defaultTheme);
         const colors = await getRandomColors(8);
         setPalette(sortColors(colors));
     }
@@ -78,11 +81,14 @@
         remove: () => setPalette(palette.slice(0, palette.length-1)),
         sort: async () => setPalette(sortColorsByLuminance(palette)),
         arrange: () => setPalette(arrangeColorsByMinimizingDistance(palette)),
-        randomize: async () => setPalette(await getRandomColors(palette.length)),
+        randomize: async () => setPalette(arrangeColorsByMinimizingDistance(await getRandomColors(palette.length))),
     }
 
     const colorActions = {
-        random: async () => setCurrentColor(await getRandomColor())
+        random: async () => setCurrentColor(await getRandomColor()),
+        background: () => setThemeBackground(getSelectedColor()),
+        foreground: () => setThemeForeground(getSelectedColor()),
+        accent: () => setThemeAccent(getSelectedColor())
     }
     
     function initActionList(){
@@ -220,6 +226,13 @@
         onSelectedInstanceChange();
     }
 
+    function getSelectedColor(){
+        if (selectedIndex == null) { 
+            return null;
+        }
+        return palette[selectedIndex];
+    }
+
     function onSelectedInstanceChange(){
         renderColorEditor();
     }
@@ -320,6 +333,31 @@
             element[key] = props[key];
         }
         return element;
+    }
+
+    const setThemeBackground = rgb => setThemeColor(rgb, themeBackgroundIndex);
+    const setThemeForeground = rgb => setThemeColor(rgb, themeForegroundIndex);
+    const setThemeAccent = rgb => setThemeColor(rgb, themeAccentIndex);
+
+    function setThemeColor(rgb, index){
+        const newTheme = theme.slice();
+        newTheme[index] = rgb;
+        setTheme(newTheme);
+    }
+
+    function setTheme(newTheme){
+        if (theme == newTheme) return;
+        theme = newTheme;
+        renderTheme();
+    }
+
+    function renderTheme(){
+        const colors = theme.map(rgbToCssColor);
+        dynamicStyle.textContent = `:root{
+            --bg: ${colors[themeBackgroundIndex]};
+            --fg: ${colors[themeForegroundIndex]};
+            --pr: ${colors[themeAccentIndex]};
+        }`;
     }
 
     const decodeHexbotResponse = ({ colors }) => 
