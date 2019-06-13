@@ -25,5 +25,14 @@ async function makeSureDirExists(dir){
     }
 }
 
-process.chdir(__dirname);
-main();
+(async() => {
+    try {
+        process.chdir(__dirname);
+        console.log('working directory', __dirname);
+        await main();
+    }
+    catch (error){
+        console.error(error);
+        process.exit(1);
+    }
+})();
