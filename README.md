@@ -1,12 +1,15 @@
 
 # 🌈 Palettify
 
-Allows you to generate palettes.
-
 Online version: https://palettify.netlify.com/
 
-It's based on Hexbot.
+Wants to be a palette generation and color manipulation tool. Started off as (hexbot noops challenge)[https://noopschallenge.com/challenges/hexbot]
 
-![Hexbot](https://user-images.githubusercontent.com/212941/59163439-23c05900-8ab6-11e9-8764-977334c7bba8.png)
-
-More about Hexbot here: https://noopschallenge.com/challenges/hexbot
+You can currently:
+ - copy&paste hex values with `ctrl`+`c` and `ctrl`-`v`
+ - add in between color or merge colors 
+ - generate random colors
+ - color sorting to make aestetically pleasing palettes
+ - undo & redo becase a lot of operations mess with the whole palette
+ 
+Going forward the plans are to add additional color manipulation and visualization tools. The goal is to be able to use this tool for generating palettes for new projects, or to be able to derive new colors from existing ones in for existing projects.
