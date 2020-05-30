@@ -3,7 +3,7 @@
 
 Online version: https://palettify.netlify.com/
 
-Wants to be a palette generation and color manipulation tool. Started off as (hexbot noops challenge)[https://noopschallenge.com/challenges/hexbot]
+Wants to be a palette generation and color manipulation tool. Started off as [hexbot noops challenge](https://noopschallenge.com/challenges/hexbot)
 
 You can currently:
  - copy&paste hex values with `ctrl`+`c` and `ctrl`-`v`
