@@ -393,7 +393,7 @@
     const decodeHexbotResponse = ({ colors }) => 
         colors.map(({value}) => hexToRgb(value));
 
-    const hexToRgb = (hex) => hex.match(/[0-9A-F]{2}/g).map(hexToInt);
+    const hexToRgb = (hex) => hex.match(/[0-9A-Fa-f]{2}/g).map(hexToInt);
 
     const hexToInt = (hex) => Number.parseInt(hex, 16);
 
@@ -439,6 +439,14 @@
             const newPalette = palette.slice();
             newPalette.splice(selectedIndex,1,rgb);
             setPalette(newPalette);
+        } else {
+            const colors = [];
+            for (const x of data.matchAll(/#[A-Za-z0-9]{6}/g)) {
+                const color = x[0];
+                colors.push(color);
+            }
+            console.log(colors);
+            setPalette(colors.map(hexToRgb));
         }
         e.preventDefault();
     });
